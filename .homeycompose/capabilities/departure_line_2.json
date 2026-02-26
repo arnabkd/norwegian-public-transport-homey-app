@@ -1,0 +1,7 @@
+{
+  "type": "string",
+  "title": { "en": "Departure 2" },
+  "getable": true,
+  "setable": false,
+  "uiComponent": null
+}

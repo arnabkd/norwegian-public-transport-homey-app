@@ -1,0 +1,8 @@
+{
+  "name": { "en": "Ruter stop place" },
+  "class": "other",
+  "capabilities": ["departure_line_1", "departure_line_2", "departure_line_3"],
+  "pair": [
+    { "id": "search" }
+  ]
+}
