@@ -60,7 +60,7 @@ const DEPARTURES_QUERY = `
 query GetDepartures($id: String!) {
   stopPlace(id: $id) {
     name
-    estimatedCalls(numberOfDepartures: 3, timeRange: 600) {
+    estimatedCalls(numberOfDepartures: 20, timeRange: 600) {
       realtime
       aimedDepartureTime
       expectedDepartureTime

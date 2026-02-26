@@ -1,0 +1,13 @@
+{
+  "name": "entur-testbed",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "vite": "^6.2.0",
+    "typescript": "^5.9.3"
+  }
+}
