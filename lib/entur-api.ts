@@ -75,8 +75,8 @@ query GetDepartures($id: String!, $numDepartures: Int!, $timeRange: Int!) {
 
 export async function getDepartures(
   stopPlaceId: string,
-  numDepartures: number = 20,
-  timeRange: number = 600,
+  numDepartures = 20,
+  timeRange = 600,
 ): Promise<EstimatedCall[]> {
   const res = await fetch('https://api.entur.io/journey-planner/v3/graphql', {
     method: 'POST',
