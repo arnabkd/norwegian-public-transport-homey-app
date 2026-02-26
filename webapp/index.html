@@ -158,6 +158,35 @@
     .mode-btn:hover { border-color: #58a6ff; }
     .mode-btn .mode-icon { font-size: 1rem; }
 
+    .settings-bar {
+      margin-top: 1rem;
+      max-width: 500px;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .setting {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.8rem;
+      color: #6e7681;
+    }
+    .setting label { white-space: nowrap; }
+    .setting input {
+      width: 3.5rem;
+      padding: 0.3rem 0.4rem;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #e1e3e8;
+      font-size: 0.8rem;
+      text-align: center;
+      outline: none;
+    }
+    .setting input:focus { border-color: #58a6ff; }
+    .setting .unit { color: #484f58; }
+
     .no-departures, .error {
       padding: 1rem;
       text-align: center;
@@ -170,6 +199,23 @@
 </head>
 <body>
   <h1>Entur Testbed <span>— departure monitor</span></h1>
+
+  <div class="settings-bar">
+    <div class="setting">
+      <label for="cfg-count">Departures</label>
+      <input id="cfg-count" type="number" min="1" max="10" value="3" />
+    </div>
+    <div class="setting">
+      <label for="cfg-refresh">Refresh</label>
+      <input id="cfg-refresh" type="number" min="5" max="60" value="10" />
+      <span class="unit">s</span>
+    </div>
+    <div class="setting">
+      <label for="cfg-window">Window</label>
+      <input id="cfg-window" type="number" min="5" max="60" value="10" />
+      <span class="unit">min</span>
+    </div>
+  </div>
 
   <div class="search-box">
     <input id="search" type="text" placeholder="Search for a stop place..." autofocus />

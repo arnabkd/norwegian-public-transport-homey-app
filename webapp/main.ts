@@ -30,6 +30,12 @@ const CATEGORY_TO_MODE: Record<string, string> = {
   airport: 'air',
 };
 
+const config = {
+  displayCount: 3,
+  refreshInterval: 10,
+  timeWindow: 10,
+};
+
 let selectedStop: StopPlace | null = null;
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 let activeModes = new Set<string>();
@@ -41,6 +47,33 @@ const selectedInfo = document.getElementById('selected-info') as HTMLElement;
 const modeFiltersEl = document.getElementById('mode-filters') as HTMLElement;
 const departuresEl = document.getElementById('departures') as HTMLElement;
 const clearBtn = document.getElementById('clear-btn') as HTMLButtonElement;
+const cfgCount = document.getElementById('cfg-count') as HTMLInputElement;
+const cfgRefresh = document.getElementById('cfg-refresh') as HTMLInputElement;
+const cfgWindow = document.getElementById('cfg-window') as HTMLInputElement;
+
+cfgCount.addEventListener('change', () => {
+  config.displayCount = Math.max(1, Math.min(10, Number(cfgCount.value) || 3));
+  cfgCount.value = String(config.displayCount);
+  renderFilteredDepartures();
+});
+
+cfgRefresh.addEventListener('change', () => {
+  config.refreshInterval = Math.max(5, Math.min(60, Number(cfgRefresh.value) || 10));
+  cfgRefresh.value = String(config.refreshInterval);
+  restartPolling();
+});
+
+cfgWindow.addEventListener('change', () => {
+  config.timeWindow = Math.max(5, Math.min(60, Number(cfgWindow.value) || 10));
+  cfgWindow.value = String(config.timeWindow);
+  fetchAndRender();
+});
+
+function restartPolling() {
+  if (!selectedStop) return;
+  if (pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(fetchAndRender, config.refreshInterval * 1000);
+}
 
 let debounceTimer: ReturnType<typeof setTimeout>;
 searchInput.addEventListener('input', () => {
@@ -101,7 +134,7 @@ function selectStop(stop: StopPlace) {
 
   if (pollTimer) clearInterval(pollTimer);
   fetchAndRender();
-  pollTimer = setInterval(fetchAndRender, 10_000);
+  pollTimer = setInterval(fetchAndRender, config.refreshInterval * 1000);
 }
 
 function renderModeFilters(modes: string[]) {
@@ -132,7 +165,9 @@ async function fetchAndRender() {
   if (!selectedStop) return;
 
   try {
-    const calls = await getDepartures(selectedStop.id);
+    const numDepartures = Math.max(20, config.displayCount * 5);
+    const timeRange = config.timeWindow * 60;
+    const calls = await getDepartures(selectedStop.id, numDepartures, timeRange);
     cachedCalls = calls.sort(
       (a, b) => new Date(a.expectedDepartureTime).getTime() - new Date(b.expectedDepartureTime).getTime(),
     );
@@ -146,7 +181,7 @@ async function fetchAndRender() {
 function renderFilteredDepartures() {
   const filtered = cachedCalls
     .filter((call) => activeModes.has(call.serviceJourney.line.transportMode))
-    .slice(0, 3);
+    .slice(0, config.displayCount);
   renderDepartures(filtered);
 }
 

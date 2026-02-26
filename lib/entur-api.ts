@@ -57,10 +57,10 @@ export async function searchStopPlaces(query: string): Promise<StopPlace[]> {
 }
 
 const DEPARTURES_QUERY = `
-query GetDepartures($id: String!) {
+query GetDepartures($id: String!, $numDepartures: Int!, $timeRange: Int!) {
   stopPlace(id: $id) {
     name
-    estimatedCalls(numberOfDepartures: 20, timeRange: 600) {
+    estimatedCalls(numberOfDepartures: $numDepartures, timeRange: $timeRange) {
       realtime
       aimedDepartureTime
       expectedDepartureTime
@@ -73,7 +73,11 @@ query GetDepartures($id: String!) {
 }
 `;
 
-export async function getDepartures(stopPlaceId: string): Promise<EstimatedCall[]> {
+export async function getDepartures(
+  stopPlaceId: string,
+  numDepartures: number = 20,
+  timeRange: number = 600,
+): Promise<EstimatedCall[]> {
   const res = await fetch('https://api.entur.io/journey-planner/v3/graphql', {
     method: 'POST',
     headers: {
@@ -82,7 +86,7 @@ export async function getDepartures(stopPlaceId: string): Promise<EstimatedCall[
     },
     body: JSON.stringify({
       query: DEPARTURES_QUERY,
-      variables: { id: stopPlaceId },
+      variables: { id: stopPlaceId, numDepartures, timeRange },
     }),
   });
 
