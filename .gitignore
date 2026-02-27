@@ -3,3 +3,4 @@
 /.homeybuild/
 /webapp/node_modules/
 /webapp/dist/
+.playwright-mcp/
