@@ -13,6 +13,16 @@ const MODE_ICONS: Record<string, string> = {
 
 const CAPABILITY_KEYS = ['departure_line_1', 'departure_line_2', 'departure_line_3'] as const;
 
+const MODE_SETTING_KEYS: Record<string, string> = {
+  bus: 'filter_bus',
+  metro: 'filter_metro',
+  tram: 'filter_tram',
+  rail: 'filter_rail',
+  water: 'filter_water',
+  air: 'filter_air',
+  coach: 'filter_coach',
+};
+
 class RuterStopPlaceDevice extends Homey.Device {
 
   private pollInterval: NodeJS.Timeout | undefined;
@@ -30,20 +40,39 @@ class RuterStopPlaceDevice extends Homey.Device {
     this.pollInterval = this.homey.setInterval(() => this.pollDepartures(), 10_000);
   }
 
+  async onSettings({ changedKeys }: { oldSettings: Record<string, unknown>; newSettings: Record<string, unknown>; changedKeys: string[] }) {
+    if (changedKeys.some((k) => k.startsWith('filter_'))) {
+      await this.pollDepartures();
+    }
+  }
+
   async onUninit() {
     if (this.pollInterval) {
       this.homey.clearInterval(this.pollInterval);
     }
   }
 
+  private getEnabledModes(): Set<string> {
+    const modes = new Set<string>();
+    for (const [mode, settingKey] of Object.entries(MODE_SETTING_KEYS)) {
+      if (this.getSetting(settingKey) !== false) {
+        modes.add(mode);
+      }
+    }
+    return modes;
+  }
+
   private async pollDepartures() {
     try {
       const stopPlaceId = this.getStoreValue('stopPlaceId');
       const calls = await getDepartures(stopPlaceId);
+      const enabledModes = this.getEnabledModes();
 
-      const sorted = calls.sort(
-        (a, b) => new Date(a.expectedDepartureTime).getTime() - new Date(b.expectedDepartureTime).getTime(),
-      );
+      const sorted = calls
+        .filter((c) => enabledModes.has(c.serviceJourney.line.transportMode))
+        .sort(
+          (a, b) => new Date(a.expectedDepartureTime).getTime() - new Date(b.expectedDepartureTime).getTime(),
+        );
 
       for (let i = 0; i < CAPABILITY_KEYS.length; i++) {
         const key = CAPABILITY_KEYS[i];

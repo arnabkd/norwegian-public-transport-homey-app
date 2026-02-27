@@ -124,11 +124,24 @@
       });
     }
 
+    const ALL_MODES = ['bus', 'metro', 'tram', 'rail', 'water', 'air', 'coach'];
+
     function selectStop(stop) {
-      Homey.createDevice({
-        name: stop.name,
-        data: { id: stop.id },
-        store: { stopPlaceId: stop.id, stopPlaceName: stop.name },
+      statusDiv.textContent = 'Setting up device...';
+      resultsDiv.innerHTML = '';
+
+      Homey.emit('getStopModes', stop.id).then(modes => {
+        const settings = {};
+        ALL_MODES.forEach(m => {
+          settings['filter_' + m] = modes.includes(m);
+        });
+
+        return Homey.createDevice({
+          name: stop.name,
+          data: { id: stop.id },
+          store: { stopPlaceId: stop.id, stopPlaceName: stop.name },
+          settings: settings,
+        });
       })
       .then(() => Homey.done())
       .catch(err => {
