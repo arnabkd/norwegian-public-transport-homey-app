@@ -53,7 +53,8 @@
       },
       "getable": true,
       "setable": false,
-      "uiComponent": null
+      "uiComponent": "sensor",
+      "icon": "/assets/departure.svg"
     },
     "departure_line_2": {
       "type": "string",
@@ -62,7 +63,8 @@
       },
       "getable": true,
       "setable": false,
-      "uiComponent": null
+      "uiComponent": "sensor",
+      "icon": "/assets/departure.svg"
     },
     "departure_line_3": {
       "type": "string",
@@ -71,7 +73,8 @@
       },
       "getable": true,
       "setable": false,
-      "uiComponent": null
+      "uiComponent": "sensor",
+      "icon": "/assets/departure.svg"
     }
   }
 }

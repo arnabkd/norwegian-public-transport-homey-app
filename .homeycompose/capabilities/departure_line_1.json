@@ -3,5 +3,6 @@
   "title": { "en": "Departure 1" },
   "getable": true,
   "setable": false,
-  "uiComponent": null
+  "uiComponent": "sensor",
+  "icon": "/assets/departure.svg"
 }
