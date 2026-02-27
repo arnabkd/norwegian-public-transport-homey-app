@@ -1,0 +1,16 @@
+{
+  "name": {
+    "en": "Ruter Departures"
+  },
+  "devices": {
+    "type": "app",
+    "singular": true
+  },
+  "height": 250,
+  "api": {
+    "getDepartures": {
+      "method": "GET",
+      "path": "/departures"
+    }
+  }
+}

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--homey-text-color, #e1e3e8);
+      padding: 12px 16px;
+    }
+    .header {
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0.6;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .departure {
+      display: flex;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(128, 128, 128, 0.15);
+      font-size: 14px;
+    }
+    .departure:last-child { border-bottom: none; }
+    .dep-mode { width: 28px; flex-shrink: 0; font-size: 16px; }
+    .dep-line {
+      width: 40px;
+      flex-shrink: 0;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .dep-dest {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding-right: 8px;
+    }
+    .dep-time {
+      flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+      font-weight: 500;
+      text-align: right;
+      min-width: 50px;
+    }
+    .dep-time.now { font-weight: 700; }
+    .dep-rt {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #3b82f6;
+      margin-left: 6px;
+      flex-shrink: 0;
+    }
+    .dep-rt.not-realtime { background: transparent; }
+    #message {
+      text-align: center;
+      opacity: 0.5;
+      padding: 20px 0;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div id="header" class="header" style="display:none;"></div>
+  <div id="departures"></div>
+  <div id="message">Loading...</div>
+
+  <script>
+    var MODE_ICONS = {
+      bus: '\u{1F68C}',
+      metro: '\u{1F687}',
+      tram: '\u{1F68A}',
+      rail: '\u{1F682}',
+      water: '\u26F4\uFE0F',
+      air: '\u2708\uFE0F',
+      coach: '\u{1F68C}',
+    };
+
+    function formatTime(expectedDepartureTime) {
+      var now = Date.now();
+      var dep = new Date(expectedDepartureTime).getTime();
+      var diffMin = Math.round((dep - now) / 60000);
+
+      if (diffMin < 1) return { text: 'now', isNow: true };
+      if (diffMin < 15) return { text: diffMin + ' min', isNow: false };
+
+      var d = new Date(expectedDepartureTime);
+      var hh = String(d.getHours()).padStart(2, '0');
+      var mm = String(d.getMinutes()).padStart(2, '0');
+      return { text: hh + ':' + mm, isNow: false };
+    }
+
+    function render(data) {
+      var headerEl = document.getElementById('header');
+      var depsEl = document.getElementById('departures');
+      var msgEl = document.getElementById('message');
+
+      if (data.stopPlaceName) {
+        headerEl.textContent = data.stopPlaceName;
+        headerEl.style.display = 'block';
+      }
+
+      if (!data.departures || data.departures.length === 0) {
+        depsEl.innerHTML = '';
+        msgEl.textContent = 'No upcoming departures';
+        msgEl.style.display = 'block';
+        return;
+      }
+
+      msgEl.style.display = 'none';
+      var html = '';
+      for (var i = 0; i < data.departures.length; i++) {
+        var dep = data.departures[i];
+        var mode = dep.serviceJourney.line.transportMode;
+        var icon = MODE_ICONS[mode] || '\u{1F68D}';
+        var line = dep.serviceJourney.line.publicCode;
+        var dest = dep.destinationDisplay.frontText;
+        var time = formatTime(dep.expectedDepartureTime);
+        var rtClass = dep.realtime ? '' : ' not-realtime';
+
+        html += '<div class="departure">'
+          + '<span class="dep-mode">' + icon + '</span>'
+          + '<span class="dep-line">' + line + '</span>'
+          + '<span class="dep-dest">' + dest + '</span>'
+          + '<span class="dep-time' + (time.isNow ? ' now' : '') + '">' + time.text + '</span>'
+          + '<span class="dep-rt' + rtClass + '"></span>'
+          + '</div>';
+      }
+      depsEl.innerHTML = html;
+    }
+
+    function onHomeyReady(Homey) {
+      var deviceIds = Homey.getDeviceIds();
+
+      if (!deviceIds || deviceIds.length === 0) {
+        document.getElementById('message').textContent = 'Select a stop place in widget settings';
+        Homey.ready();
+        return;
+      }
+
+      var deviceId = deviceIds[0];
+
+      function fetchDepartures() {
+        Homey.api('GET', '/departures?deviceId=' + encodeURIComponent(deviceId))
+          .then(function(data) {
+            render(data);
+            var rows = (data.departures || []).length;
+            var height = 32 + Math.max(rows, 1) * 37 + 12;
+            Homey.setHeight(height);
+          })
+          .catch(function(err) {
+            document.getElementById('message').textContent = 'Error loading departures';
+            document.getElementById('message').style.display = 'block';
+            document.getElementById('departures').innerHTML = '';
+          });
+      }
+
+      fetchDepartures();
+      setInterval(fetchDepartures, 10000);
+      Homey.ready();
+    }
+  </script>
+</body>
+</html>
