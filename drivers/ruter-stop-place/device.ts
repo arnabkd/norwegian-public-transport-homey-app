@@ -46,15 +46,23 @@ class RuterStopPlaceDevice extends Homey.Device {
       );
 
       for (let i = 0; i < CAPABILITY_KEYS.length; i++) {
-        const value = sorted[i] ? this.formatDeparture(sorted[i]) : '-';
-        await this.setCapabilityValue(CAPABILITY_KEYS[i], value).catch(this.error);
+        const key = CAPABILITY_KEYS[i];
+        if (sorted[i]) {
+          const { label, time } = this.formatDeparture(sorted[i]);
+          await this.setCapabilityValue(key, label).catch(this.error);
+          await this.setCapabilityOptions(key, { title: time }).catch(this.error);
+        } else {
+          await this.setCapabilityValue(key, '-').catch(this.error);
+        }
       }
     } catch (err) {
       this.error('Failed to poll departures:', err);
     }
   }
 
-  private formatDeparture(call: EstimatedCall): string {
+  private static readonly MAX_LEN = 20;
+
+  private formatDeparture(call: EstimatedCall): { label: string; time: string } {
     const icon = MODE_ICONS[call.serviceJourney.line.transportMode] || '\u{1F68D}';
     const line = call.serviceJourney.line.publicCode;
     const dest = call.destinationDisplay.frontText;
@@ -63,19 +71,27 @@ class RuterStopPlaceDevice extends Homey.Device {
     const departureMs = new Date(call.expectedDepartureTime).getTime();
     const diffMin = Math.round((departureMs - now) / 60_000);
 
-    let timeStr: string;
+    let time: string;
     if (diffMin < 1) {
-      timeStr = 'now';
-    } else if (diffMin < 15) {
-      timeStr = `${diffMin} min`;
+      time = 'now';
+    } else if (diffMin < 60) {
+      time = `${diffMin} min`;
     } else {
       const d = new Date(call.expectedDepartureTime);
       const hh = String(d.getHours()).padStart(2, '0');
       const mm = String(d.getMinutes()).padStart(2, '0');
-      timeStr = `${hh}:${mm}`;
+      time = `${hh}:${mm}`;
     }
 
-    return `${icon} ${line} ${dest} - ${timeStr}`;
+    // Time is now in the subtitle, so the value only has: "{icon} {line} {dest}"
+    // Icon counts as ~2 visible chars
+    const fixedLen = 2 + 1 + line.length + 1;
+    const available = RuterStopPlaceDevice.MAX_LEN - fixedLen;
+    const truncDest = dest.length > available
+      ? `${dest.slice(0, Math.max(available - 1, 1))}…`
+      : dest;
+
+    return { label: `${icon} ${line} ${truncDest}`, time };
   }
 
 }
