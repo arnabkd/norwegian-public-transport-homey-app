@@ -1,5 +1,8 @@
 {
   "1.0.0": {
     "en": "First version!"
+  },
+  "1.0.2": {
+    "en": "Renamed some labels so that they are more generic, since we are no longer restricted to just Ruter's domain"
   }
 }

@@ -1,6 +1,6 @@
 {
-  "id": "no.arnab.ruter.avganger",
-  "version": "1.0.0",
+  "id": "no.arnab.norwegian.public.transport",
+  "version": "1.0.2",
   "compatibility": ">=12.4.0",
   "sdk": 3,
   "platforms": [
