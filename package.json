@@ -1,5 +1,5 @@
 {
-  "name": "no.arnab.ruter.avganger",
+  "name": "no.arnab.norwegian.public.transport",
   "version": "1.0.0",
   "scripts": {
     "build": "tsc",

@@ -1,1 +1,3 @@
-# 
+Norwegian Public Transport brings real-time departure information from any stop place in Norway directly to your Homey. Whether you take the bus, tram, metro, train, or ferry, you can monitor upcoming departures at a glance from your home dashboard or through the departure widget.
+
+Simply search for your preferred stop place during setup, and the app will keep you updated with live departure times, line numbers, and destinations. The app uses data from Entur, Norway's national public transport data provider, ensuring accurate and up-to-date information for (almost) all operators across the country.

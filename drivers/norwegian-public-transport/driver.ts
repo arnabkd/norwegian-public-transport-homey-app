@@ -1,7 +1,7 @@
 import Homey from 'homey';
-import { searchStopPlaces, getDepartures } from '../../lib/entur-api';
+import { getDepartures, searchStopPlaces } from '../../lib/entur-api';
 
-class RuterStopPlaceDriver extends Homey.Driver {
+class StopPlaceDriver extends Homey.Driver {
 
   async onPair(session: Homey.Driver.PairSession) {
     session.setHandler('search', async (query: string) => {
@@ -17,4 +17,4 @@ class RuterStopPlaceDriver extends Homey.Driver {
 
 }
 
-module.exports = RuterStopPlaceDriver;
+module.exports = StopPlaceDriver;

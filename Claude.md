@@ -2,7 +2,7 @@
 
 ### Onboarding procedure
 Start by creating a device with the following onboarding procedure:
-- Let the user choose a device with label `Ruter stop place`
+- Let the user choose a device with label `Stop place`
 - Let them search for a stop place using the autocomplete API https://developer.entur.org/pages-geocoder-intro. Set the ET-Client-Name to `arnab_homey-app`. The results you get back, will follow this kind of structure: https://api.entur.io/geocoder/v1/autocomplete?text=H%C3%B8yenhall&lang=en
 - This should generate a list of points of interest. In the example above, the stop place with id: `NSR:StopPlace:58250` is a multi-modal stop place, meaning it serves both metro and bus (in this specific case)
 - The user should then be able to choose amongst this list and configure the device so it monitors departures from the stop place that has been chosen.
