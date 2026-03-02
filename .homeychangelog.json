@@ -4,5 +4,8 @@
   },
   "1.0.2": {
     "en": "Renamed some labels so that they are more generic, since we are no longer restricted to just Ruter's domain"
+  },
+  "1.0.3": {
+    "en": "Cosmetic changes to dashboard, updated app icons and widget previews"
   }
 }
