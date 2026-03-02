@@ -11,43 +11,81 @@
       padding: 12px 16px;
     }
     .header {
-      font-size: 13px;
-      font-weight: 600;
-      opacity: 0.6;
-      margin-bottom: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      letter-spacing: 0.2px;
+    }
+    .col-headers {
+      display: flex;
+      align-items: center;
+      padding: 4px 0 6px;
+      font-size: 11px;
+      font-weight: 500;
+      opacity: 0.45;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
+    .col-line { width: 64px; flex-shrink: 0; }
+    .col-dest { flex: 1; }
+    .col-time { flex-shrink: 0; text-align: right; min-width: 48px; }
     .departure {
       display: flex;
       align-items: center;
-      padding: 8px 0;
-      border-bottom: 1px solid rgba(128, 128, 128, 0.15);
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(128, 128, 128, 0.12);
       font-size: 14px;
     }
     .departure:last-child { border-bottom: none; }
-    .dep-mode { width: 28px; flex-shrink: 0; font-size: 16px; }
-    .dep-line {
-      width: 40px;
+    .dep-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px 3px 5px;
+      border-radius: 6px;
       flex-shrink: 0;
-      font-weight: 700;
-      font-size: 14px;
+      min-width: 52px;
+      margin-right: 10px;
     }
+    .dep-badge svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+    .dep-badge .line-code {
+      font-weight: 700;
+      font-size: 13px;
+      color: #fff;
+    }
+    .badge-bus { background: #E0006E; }
+    .badge-coach { background: #E0006E; }
+    .badge-metro { background: #EC6E00; }
+    .badge-tram { background: #0B91EF; }
+    .badge-rail { background: #808080; }
+    .badge-water { background: #7350A0; }
+    .badge-air { background: #058181; }
+    .badge-unknown { background: #666; }
     .dep-dest {
       flex: 1;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
       padding-right: 8px;
+      font-size: 14px;
+      font-weight: 500;
     }
     .dep-time {
       flex-shrink: 0;
       font-variant-numeric: tabular-nums;
       font-weight: 500;
       text-align: right;
-      min-width: 50px;
+      min-width: 48px;
+      font-size: 14px;
     }
-    .dep-time.now { font-weight: 700; }
+    .dep-time.soon {
+      color: #F0635A;
+      font-weight: 700;
+    }
     .dep-rt {
       width: 6px;
       height: 6px;
@@ -67,18 +105,33 @@
 </head>
 <body>
   <div id="header" class="header" style="display:none;"></div>
+  <div id="col-headers" class="col-headers" style="display:none;">
+    <span class="col-line">Line</span>
+    <span class="col-dest">Destination</span>
+    <span class="col-time">Departs</span>
+  </div>
   <div id="departures"></div>
   <div id="message">Loading...</div>
 
   <script>
-    var MODE_ICONS = {
-      bus: '\u{1F68C}',
-      metro: '\u{1F687}',
-      tram: '\u{1F68A}',
-      rail: '\u{1F682}',
-      water: '\u26F4\uFE0F',
-      air: '\u2708\uFE0F',
-      coach: '\u{1F68C}',
+    var MODE_SVGS = {
+      bus: '<svg viewBox="0 0 24 24" fill="white"><rect x="4" y="3" width="16" height="15" rx="3" fill="none" stroke="white" stroke-width="1.8"/><rect x="6" y="5.5" width="12" height="6" rx="1.5" fill="white" opacity="0.9"/><circle cx="8" cy="15" r="1.5" fill="white"/><circle cx="16" cy="15" r="1.5" fill="white"/><line x1="7" y1="18" x2="7" y2="20.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/><line x1="17" y1="18" x2="17" y2="20.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>',
+      metro: '<svg viewBox="0 0 24 24" fill="white"><circle cx="12" cy="12" r="9" fill="none" stroke="white" stroke-width="1.8"/><text x="12" y="16.5" text-anchor="middle" font-size="13" font-weight="700" fill="white" font-family="sans-serif">T</text></svg>',
+      tram: '<svg viewBox="0 0 24 24" fill="white"><rect x="5" y="5" width="14" height="14" rx="3" fill="none" stroke="white" stroke-width="1.8"/><rect x="7" y="7" width="10" height="5.5" rx="1.5" fill="white" opacity="0.9"/><circle cx="9" cy="16" r="1.3" fill="white"/><circle cx="15" cy="16" r="1.3" fill="white"/><line x1="8" y1="5" x2="6" y2="2" stroke="white" stroke-width="1.5" stroke-linecap="round"/><line x1="16" y1="5" x2="18" y2="2" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>',
+      rail: '<svg viewBox="0 0 24 24" fill="white"><rect x="5" y="3" width="14" height="16" rx="3" fill="none" stroke="white" stroke-width="1.8"/><rect x="7" y="5.5" width="10" height="5.5" rx="1.5" fill="white" opacity="0.9"/><circle cx="9" cy="15" r="1.3" fill="white"/><circle cx="15" cy="15" r="1.3" fill="white"/><line x1="8" y1="19" x2="5" y2="22" stroke="white" stroke-width="1.5" stroke-linecap="round"/><line x1="16" y1="19" x2="19" y2="22" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>',
+      water: '<svg viewBox="0 0 24 24" fill="white"><path d="M3 17c2-2 4-2 6 0s4 2 6 0 4-2 6 0" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round"/><path d="M6 14V7a2 2 0 012-2h8a2 2 0 012 2v7" fill="none" stroke="white" stroke-width="1.8"/><line x1="12" y1="5" x2="12" y2="2" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>',
+      air: '<svg viewBox="0 0 24 24" fill="white"><path d="M12 2L12 22M12 6L4 12M12 6L20 12M8 18L16 18" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      coach: '<svg viewBox="0 0 24 24" fill="white"><rect x="4" y="3" width="16" height="15" rx="3" fill="none" stroke="white" stroke-width="1.8"/><rect x="6" y="5.5" width="12" height="6" rx="1.5" fill="white" opacity="0.9"/><circle cx="8" cy="15" r="1.5" fill="white"/><circle cx="16" cy="15" r="1.5" fill="white"/><line x1="7" y1="18" x2="7" y2="20.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/><line x1="17" y1="18" x2="17" y2="20.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>'
+    };
+
+    var MODE_BADGE_CLASS = {
+      bus: 'badge-bus',
+      metro: 'badge-metro',
+      tram: 'badge-tram',
+      rail: 'badge-rail',
+      water: 'badge-water',
+      air: 'badge-air',
+      coach: 'badge-coach'
     };
 
     function formatTime(expectedDepartureTime) {
@@ -86,17 +139,18 @@
       var dep = new Date(expectedDepartureTime).getTime();
       var diffMin = Math.round((dep - now) / 60000);
 
-      if (diffMin < 1) return { text: 'now', isNow: true };
-      if (diffMin < 15) return { text: diffMin + ' min', isNow: false };
+      if (diffMin < 1) return { text: 'now', soon: true };
+      if (diffMin < 15) return { text: diffMin + ' min', soon: true };
 
       var d = new Date(expectedDepartureTime);
       var hh = String(d.getHours()).padStart(2, '0');
       var mm = String(d.getMinutes()).padStart(2, '0');
-      return { text: hh + ':' + mm, isNow: false };
+      return { text: hh + ':' + mm, soon: false };
     }
 
     function render(data) {
       var headerEl = document.getElementById('header');
+      var colHeaders = document.getElementById('col-headers');
       var depsEl = document.getElementById('departures');
       var msgEl = document.getElementById('message');
 
@@ -107,27 +161,32 @@
 
       if (!data.departures || data.departures.length === 0) {
         depsEl.innerHTML = '';
+        colHeaders.style.display = 'none';
         msgEl.textContent = 'No upcoming departures';
         msgEl.style.display = 'block';
         return;
       }
 
       msgEl.style.display = 'none';
+      colHeaders.style.display = 'flex';
       var html = '';
       for (var i = 0; i < data.departures.length; i++) {
         var dep = data.departures[i];
         var mode = dep.serviceJourney.line.transportMode;
-        var icon = MODE_ICONS[mode] || '\u{1F68D}';
+        var svg = MODE_SVGS[mode] || MODE_SVGS.bus;
+        var badgeClass = MODE_BADGE_CLASS[mode] || 'badge-unknown';
         var line = dep.serviceJourney.line.publicCode;
         var dest = dep.destinationDisplay.frontText;
         var time = formatTime(dep.expectedDepartureTime);
         var rtClass = dep.realtime ? '' : ' not-realtime';
 
         html += '<div class="departure">'
-          + '<span class="dep-mode">' + icon + '</span>'
-          + '<span class="dep-line">' + line + '</span>'
+          + '<span class="dep-badge ' + badgeClass + '">'
+          + svg
+          + '<span class="line-code">' + line + '</span>'
+          + '</span>'
           + '<span class="dep-dest">' + dest + '</span>'
-          + '<span class="dep-time' + (time.isNow ? ' now' : '') + '">' + time.text + '</span>'
+          + '<span class="dep-time' + (time.soon ? ' soon' : '') + '">' + time.text + '</span>'
           + '<span class="dep-rt' + rtClass + '"></span>'
           + '</div>';
       }
@@ -150,7 +209,7 @@
           .then(function(data) {
             render(data);
             var rows = (data.departures || []).length;
-            var height = 32 + Math.max(rows, 1) * 37 + 12;
+            var height = 52 + Math.max(rows, 1) * 38 + 12;
             Homey.setHeight(height);
           })
           .catch(function(err) {

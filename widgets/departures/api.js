@@ -1,5 +1,3 @@
-'use strict';
-
 const { getDepartures } = require('../../lib/entur-api');
 
 module.exports = {
@@ -9,7 +7,7 @@ module.exports = {
       throw new Error('No deviceId provided');
     }
 
-    const driver = homey.drivers.getDriver('ruter-stop-place');
+    const driver = homey.drivers.getDriver('norwegian-public-transport');
     const devices = driver.getDevices();
 
     // deviceId from widget is the Homey internal UUID
@@ -27,7 +25,8 @@ module.exports = {
     const calls = await getDepartures(stopPlaceId);
 
     const sorted = calls.sort(
-      (a, b) => new Date(a.expectedDepartureTime).getTime() - new Date(b.expectedDepartureTime).getTime(),
+      (a, b) => new Date(a.expectedDepartureTime).getTime()
+				- new Date(b.expectedDepartureTime).getTime(),
     );
 
     return {

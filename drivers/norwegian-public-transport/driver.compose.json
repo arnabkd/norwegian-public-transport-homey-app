@@ -1,13 +1,21 @@
 {
-  "name": { "en": "Ruter stop place" },
+  "name": {
+    "en": "Stop place"
+  },
   "class": "other",
-  "capabilities": ["departure_line_1", "departure_line_2", "departure_line_3"],
+  "capabilities": [
+    "departure_line_1",
+    "departure_line_2",
+    "departure_line_3"
+  ],
   "images": {
     "small": "{{driverAssetsPath}}/images/small.png",
     "large": "{{driverAssetsPath}}/images/large.png",
     "xlarge": "{{driverAssetsPath}}/images/xlarge.png"
   },
   "pair": [
-    { "id": "search" }
+    {
+      "id": "search"
+    }
   ]
 }

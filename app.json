@@ -39,16 +39,16 @@
         "departure_line_3"
       ],
       "images": {
-        "small": "/drivers/stop-place/assets/images/small.png",
-        "large": "/drivers/stop-place/assets/images/large.png",
-        "xlarge": "/drivers/stop-place/assets/images/xlarge.png"
+        "small": "/drivers/norwegian-public-transport/assets/images/small.png",
+        "large": "/drivers/norwegian-public-transport/assets/images/large.png",
+        "xlarge": "/drivers/norwegian-public-transport/assets/images/xlarge.png"
       },
       "pair": [
         {
           "id": "search"
         }
       ],
-      "id": "stop-place",
+      "id": "norwegian-public-transport",
       "settings": [
         {
           "type": "group",
@@ -120,7 +120,7 @@
   "widgets": {
     "departures": {
       "name": {
-        "en": "Norwegian Public Transport Departures"
+        "en": "Departures"
       },
       "devices": {
         "type": "app",
