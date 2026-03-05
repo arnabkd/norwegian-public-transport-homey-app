@@ -18,16 +18,43 @@
     h1 {
       font-size: 1.4rem;
       font-weight: 600;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1rem;
       color: #fff;
     }
     h1 span { color: #6e7681; font-weight: 400; }
 
+    /* --- Tabs --- */
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1.5rem;
+      max-width: 500px;
+      border-bottom: 1px solid #30363d;
+    }
+    .tab-btn {
+      padding: 0.6rem 1.25rem;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: #6e7681;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .tab-btn:hover { color: #e1e3e8; }
+    .tab-btn.active {
+      color: #e1e3e8;
+      border-bottom-color: #58a6ff;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* --- Search --- */
     .search-box {
       position: relative;
       max-width: 500px;
     }
-    #search {
+    .search-input {
       width: 100%;
       padding: 0.75rem 1rem;
       font-size: 1rem;
@@ -38,17 +65,17 @@
       outline: none;
       transition: border-color 0.15s;
     }
-    #search:focus { border-color: #58a6ff; }
-    #search::placeholder { color: #484f58; }
+    .search-input:focus { border-color: #58a6ff; }
+    .search-input::placeholder { color: #484f58; }
 
-    #results {
+    .search-results {
       list-style: none;
       max-width: 500px;
       margin-top: 0.25rem;
       border-radius: 8px;
       overflow: hidden;
     }
-    #results li {
+    .search-results li {
       display: flex;
       align-items: center;
       gap: 0.5rem;
@@ -58,12 +85,13 @@
       cursor: pointer;
       transition: background 0.1s;
     }
-    #results li:hover { background: #1c2330; }
+    .search-results li:hover { background: #1c2330; }
     .stop-icon { font-size: 1.1rem; flex-shrink: 0; }
     .stop-name { font-weight: 500; }
     .stop-locality { color: #6e7681; font-size: 0.85rem; margin-left: auto; }
     .stop-id { display: none; }
 
+    /* --- Selected stop bar --- */
     .selected-stop {
       margin-top: 1.5rem;
       padding: 1rem 1.25rem;
@@ -80,7 +108,7 @@
     .selected-stop-actions { display: flex; align-items: center; gap: 0.6rem; }
     .hidden { display: none !important; }
 
-    #clear-btn {
+    .clear-btn {
       background: none;
       border: 1px solid #30363d;
       color: #6e7681;
@@ -90,8 +118,9 @@
       font-size: 0.8rem;
       transition: border-color 0.15s, color 0.15s;
     }
-    #clear-btn:hover { border-color: #f85149; color: #f85149; }
+    .clear-btn:hover { border-color: #f85149; color: #f85149; }
 
+    /* --- Departures --- */
     #departures {
       margin-top: 1rem;
       max-width: 500px;
@@ -130,6 +159,7 @@
     .dep-now { color: #3fb950; }
     .dep-rt { width: 1.2rem; text-align: center; font-size: 0.8rem; }
 
+    /* --- Mode filters --- */
     #mode-filters {
       margin-top: 0.75rem;
       max-width: 500px;
@@ -159,6 +189,7 @@
     .mode-btn:hover { border-color: #58a6ff; }
     .mode-btn .mode-icon { font-size: 1rem; }
 
+    /* --- Settings bar --- */
     .settings-bar {
       margin-top: 1rem;
       max-width: 500px;
@@ -174,8 +205,7 @@
       color: #6e7681;
     }
     .setting label { white-space: nowrap; }
-    .setting input {
-      width: 3.5rem;
+    .setting input[type="number"], .setting input[type="text"], .setting input[type="time"] {
       padding: 0.3rem 0.4rem;
       background: #161b22;
       border: 1px solid #30363d;
@@ -185,29 +215,20 @@
       text-align: center;
       outline: none;
     }
+    .setting input[type="number"] { width: 3.5rem; }
+    .setting input[type="text"] { width: 5rem; }
+    .setting input[type="time"] { width: 5.5rem; }
     .setting input:focus { border-color: #58a6ff; }
     .setting .unit { color: #484f58; }
 
-    #refresh-indicator {
+    /* --- Refresh indicator --- */
+    #refresh-indicator, .refresh-indicator {
       display: flex;
       align-items: center;
     }
-    .refresh-ring {
-      transform: rotate(-90deg);
-    }
-    .refresh-ring-bg {
-      fill: none;
-      stroke: #21262d;
-      stroke-width: 3;
-    }
-    .refresh-ring-fg {
-      fill: none;
-      stroke: #58a6ff;
-      stroke-width: 3;
-      stroke-dasharray: 50.27;
-      stroke-dashoffset: 50.27;
-      stroke-linecap: round;
-    }
+    .refresh-ring { transform: rotate(-90deg); }
+    .refresh-ring-bg { fill: none; stroke: #21262d; stroke-width: 3; }
+    .refresh-ring-fg { fill: none; stroke: #58a6ff; stroke-width: 3; stroke-dasharray: 50.27; stroke-dashoffset: 50.27; stroke-linecap: round; }
     @keyframes refresh-countdown {
       from { stroke-dashoffset: 50.27; }
       to { stroke-dashoffset: 0; }
@@ -221,51 +242,291 @@
       border-radius: 8px;
     }
     .error { color: #f85149; }
+
+    /* --- Commute panel --- */
+    .commute-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-width: 500px;
+    }
+    .commute-result {
+      margin-top: 1rem;
+      max-width: 500px;
+    }
+    .commute-card {
+      padding: 1rem 1.25rem;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+    .commute-stat {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+    .commute-stat .label { font-size: 0.75rem; color: #6e7681; text-transform: uppercase; }
+    .commute-stat .value { font-size: 1.1rem; font-weight: 600; }
+
+    /* --- Flow card log --- */
+    .flow-log-section {
+      margin-top: 2rem;
+      max-width: 700px;
+    }
+    .flow-log-section h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #e1e3e8;
+      margin-bottom: 0.75rem;
+    }
+    .flow-log {
+      max-height: 300px;
+      overflow-y: auto;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+    .flow-log:empty::after {
+      content: 'No events yet — select a stop or configure commute to start.';
+      display: block;
+      padding: 1rem;
+      color: #484f58;
+      text-align: center;
+    }
+    .log-entry {
+      padding: 0.4rem 0.75rem;
+      border-bottom: 1px solid #21262d;
+      display: flex;
+      gap: 0.5rem;
+      align-items: baseline;
+    }
+    .log-entry:last-child { border-bottom: none; }
+    .log-time { color: #484f58; flex-shrink: 0; }
+    .log-type { flex-shrink: 0; font-weight: 600; }
+    .log-type.trigger { color: #d29922; }
+    .log-type.condition { color: #58a6ff; }
+    .log-tokens { color: #8b949e; }
+
+    /* --- Condition testers --- */
+    .condition-testers {
+      margin-top: 1rem;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .condition-tester {
+      padding: 0.75rem 1rem;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .condition-tester .ct-label {
+      font-size: 0.85rem;
+      color: #8b949e;
+      min-width: 120px;
+    }
+    .condition-tester select, .condition-tester input[type="number"] {
+      padding: 0.3rem 0.5rem;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #e1e3e8;
+      font-size: 0.8rem;
+      outline: none;
+    }
+    .condition-tester select:focus, .condition-tester input[type="number"]:focus { border-color: #58a6ff; }
+    .condition-tester input[type="number"] { width: 3.5rem; text-align: center; }
+    .eval-btn {
+      padding: 0.3rem 0.6rem;
+      background: #21262d;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #e1e3e8;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .eval-btn:hover { border-color: #58a6ff; }
+    .result-badge {
+      padding: 0.2rem 0.5rem;
+      border-radius: 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .result-badge.true { background: #238636; color: #fff; }
+    .result-badge.false { background: #da3633; color: #fff; }
+    .result-badge.pending { background: #30363d; color: #6e7681; }
   </style>
 </head>
 <body>
-  <h1>Entur Testbed <span>— departure monitor</span></h1>
+  <h1>Entur Testbed <span>— flow card simulator</span></h1>
 
-  <div class="settings-bar">
-    <div class="setting">
-      <label for="cfg-count">Departures</label>
-      <input id="cfg-count" type="number" min="1" max="10" value="3" />
-    </div>
-    <div class="setting">
-      <label for="cfg-refresh">Refresh</label>
-      <input id="cfg-refresh" type="number" min="5" max="60" value="10" />
-      <span class="unit">s</span>
-    </div>
-    <div class="setting">
-      <label for="cfg-window">Window</label>
-      <input id="cfg-window" type="number" min="5" max="60" value="10" />
-      <span class="unit">min</span>
-    </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="departures">Departures</button>
+    <button class="tab-btn" data-tab="commute">Commute</button>
   </div>
 
-  <div class="search-box">
-    <input id="search" type="text" placeholder="Search for a stop place..." autofocus />
-  </div>
-  <ul id="results"></ul>
-
-  <div id="selected-info" class="selected-stop hidden">
-    <div>
-      <div class="stop-title"></div>
-      <div class="stop-id-display"></div>
-    </div>
-    <div class="selected-stop-actions">
-      <div id="refresh-indicator" class="hidden">
-        <svg class="refresh-ring" viewBox="0 0 20 20" width="16" height="16">
-          <circle cx="10" cy="10" r="8" class="refresh-ring-bg" />
-          <circle cx="10" cy="10" r="8" class="refresh-ring-fg" />
-        </svg>
+  <!-- ========== DEPARTURES TAB ========== -->
+  <div id="tab-departures" class="tab-content active">
+    <div class="settings-bar">
+      <div class="setting">
+        <label for="cfg-count">Departures</label>
+        <input id="cfg-count" type="number" min="1" max="10" value="3" />
       </div>
-      <button id="clear-btn">Clear</button>
+      <div class="setting">
+        <label for="cfg-refresh">Refresh</label>
+        <input id="cfg-refresh" type="number" min="5" max="60" value="10" />
+        <span class="unit">s</span>
+      </div>
+      <div class="setting">
+        <label for="cfg-window">Window</label>
+        <input id="cfg-window" type="number" min="5" max="60" value="10" />
+        <span class="unit">min</span>
+      </div>
+      <div class="setting">
+        <label for="cfg-trigger-threshold">Trigger within</label>
+        <input id="cfg-trigger-threshold" type="number" min="1" max="60" value="15" />
+        <span class="unit">min</span>
+      </div>
+    </div>
+
+    <div class="search-box">
+      <input id="dep-search" class="search-input" type="text" placeholder="Search for a stop place..." autofocus />
+    </div>
+    <ul id="dep-results" class="search-results"></ul>
+
+    <div id="dep-selected-info" class="selected-stop hidden">
+      <div>
+        <div class="stop-title"></div>
+        <div class="stop-id-display"></div>
+      </div>
+      <div class="selected-stop-actions">
+        <div id="dep-refresh-indicator" class="refresh-indicator hidden">
+          <svg class="refresh-ring" viewBox="0 0 20 20" width="16" height="16">
+            <circle cx="10" cy="10" r="8" class="refresh-ring-bg" />
+            <circle cx="10" cy="10" r="8" class="refresh-ring-fg" />
+          </svg>
+        </div>
+        <button id="dep-clear-btn" class="clear-btn">Clear</button>
+      </div>
+    </div>
+
+    <div id="mode-filters" class="hidden"></div>
+    <div id="departures"></div>
+
+    <!-- Condition testers for departures -->
+    <div id="dep-conditions" class="condition-testers hidden">
+      <div class="condition-tester" id="ct-line-departs">
+        <span class="ct-label">line_departs_within</span>
+        <select id="ct-line-select"><option value="">Select line...</option></select>
+        <input id="ct-line-minutes" type="number" min="1" max="60" value="10" />
+        <span class="unit">min</span>
+        <button class="eval-btn" id="ct-line-eval">Evaluate</button>
+        <span class="result-badge pending" id="ct-line-result">—</span>
+      </div>
+      <div class="condition-tester" id="ct-mode">
+        <span class="ct-label">next_departure_is_mode</span>
+        <select id="ct-mode-select">
+          <option value="bus">bus</option>
+          <option value="metro">metro</option>
+          <option value="tram">tram</option>
+          <option value="rail">rail</option>
+          <option value="water">water</option>
+          <option value="air">air</option>
+          <option value="coach">coach</option>
+        </select>
+        <button class="eval-btn" id="ct-mode-eval">Evaluate</button>
+        <span class="result-badge pending" id="ct-mode-result">—</span>
+      </div>
     </div>
   </div>
 
-  <div id="mode-filters" class="hidden"></div>
-  <div id="departures"></div>
+  <!-- ========== COMMUTE TAB ========== -->
+  <div id="tab-commute" class="tab-content">
+    <div class="commute-fields">
+      <div class="search-box">
+        <input id="commute-origin-search" class="search-input" type="text" placeholder="Search origin stop..." />
+      </div>
+      <ul id="commute-origin-results" class="search-results"></ul>
+      <div id="commute-origin-selected" class="selected-stop hidden">
+        <div>
+          <span class="label" style="color:#6e7681;font-size:0.75rem;">ORIGIN</span>
+          <div class="stop-title"></div>
+        </div>
+        <button class="clear-btn" id="commute-origin-clear">Clear</button>
+      </div>
+
+      <div class="search-box">
+        <input id="commute-dest-search" class="search-input" type="text" placeholder="Search destination stop..." />
+      </div>
+      <ul id="commute-dest-results" class="search-results"></ul>
+      <div id="commute-dest-selected" class="selected-stop hidden">
+        <div>
+          <span class="label" style="color:#6e7681;font-size:0.75rem;">DESTINATION</span>
+          <div class="stop-title"></div>
+        </div>
+        <button class="clear-btn" id="commute-dest-clear">Clear</button>
+      </div>
+
+      <div class="settings-bar">
+        <div class="setting">
+          <label for="commute-arrival">Arrive by</label>
+          <input id="commute-arrival" type="time" value="08:30" />
+        </div>
+        <div class="setting">
+          <label for="commute-buffer">Buffer</label>
+          <input id="commute-buffer" type="number" min="0" max="30" value="5" />
+          <span class="unit">min</span>
+        </div>
+        <div class="setting">
+          <label for="commute-trigger-minutes">Trigger within</label>
+          <input id="commute-trigger-minutes" type="number" min="0" max="60" value="30" />
+          <span class="unit">min before</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="commute-result" class="commute-result hidden">
+      <div class="commute-card">
+        <div class="commute-stat">
+          <span class="label">Leave at</span>
+          <span class="value" id="commute-leave-at">—</span>
+        </div>
+        <div class="commute-stat">
+          <span class="label">Line</span>
+          <span class="value" id="commute-line">—</span>
+        </div>
+        <div class="commute-stat">
+          <span class="label">Travel time</span>
+          <span class="value" id="commute-travel-time">—</span>
+        </div>
+        <div class="selected-stop-actions">
+          <div id="commute-refresh-indicator" class="refresh-indicator hidden">
+            <svg class="refresh-ring" viewBox="0 0 20 20" width="16" height="16">
+              <circle cx="10" cy="10" r="8" class="refresh-ring-bg" />
+              <circle cx="10" cy="10" r="8" class="refresh-ring-fg" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== FLOW CARD LOG ========== -->
+  <div class="flow-log-section">
+    <h2>Flow card events</h2>
+    <div id="flow-log" class="flow-log"></div>
+  </div>
 
   <script type="module" src="./main.ts"></script>
 </body>

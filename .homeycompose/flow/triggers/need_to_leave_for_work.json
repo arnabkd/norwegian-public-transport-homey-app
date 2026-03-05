@@ -1,0 +1,52 @@
+{
+  "title": { "en": "When I need to leave for work" },
+  "titleFormatted": { "en": "When I need to leave within [[minutes_before]] minutes" },
+  "hint": { "en": "Triggers when it's time to leave for your commute. Fires once per day per computed departure." },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=commute"
+    },
+    {
+      "type": "number",
+      "name": "minutes_before",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "placeholder": { "en": "Minutes before departure" }
+    }
+  ],
+  "tokens": [
+    {
+      "name": "leave_at",
+      "type": "string",
+      "title": { "en": "Leave at" },
+      "example": { "en": "08:15" }
+    },
+    {
+      "name": "line",
+      "type": "string",
+      "title": { "en": "Line" },
+      "example": { "en": "37" }
+    },
+    {
+      "name": "mode",
+      "type": "string",
+      "title": { "en": "Transport mode" },
+      "example": { "en": "bus" }
+    },
+    {
+      "name": "travel_time",
+      "type": "number",
+      "title": { "en": "Travel time (minutes)" },
+      "example": { "en": "25" }
+    },
+    {
+      "name": "destination",
+      "type": "string",
+      "title": { "en": "Destination" },
+      "example": { "en": "Oslo S" }
+    }
+  ]
+}

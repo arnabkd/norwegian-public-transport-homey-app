@@ -1,0 +1,96 @@
+{
+  "name": {
+    "en": "Commute"
+  },
+  "class": "other",
+  "capabilities": [
+    "commute_leave_at",
+    "commute_line",
+    "commute_travel_time"
+  ],
+  "images": {
+    "small": "{{driverAssetsPath}}/images/small.png",
+    "large": "{{driverAssetsPath}}/images/large.png",
+    "xlarge": "{{driverAssetsPath}}/images/xlarge.png"
+  },
+  "pair": [
+    {
+      "id": "origin"
+    },
+    {
+      "id": "destination"
+    }
+  ],
+  "settings": [
+    {
+      "type": "group",
+      "label": { "en": "Arrival" },
+      "children": [
+        {
+          "id": "arrival_time",
+          "type": "text",
+          "label": { "en": "Arrival time (HH:MM)" },
+          "value": "08:30",
+          "hint": { "en": "What time you need to arrive at your destination" }
+        },
+        {
+          "id": "buffer_minutes",
+          "type": "number",
+          "label": { "en": "Buffer (minutes)" },
+          "value": 5,
+          "min": 0,
+          "max": 30,
+          "hint": { "en": "Extra minutes before the computed departure time" }
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "label": { "en": "Active days" },
+      "children": [
+        {
+          "id": "day_mon",
+          "type": "checkbox",
+          "label": { "en": "Monday" },
+          "value": true
+        },
+        {
+          "id": "day_tue",
+          "type": "checkbox",
+          "label": { "en": "Tuesday" },
+          "value": true
+        },
+        {
+          "id": "day_wed",
+          "type": "checkbox",
+          "label": { "en": "Wednesday" },
+          "value": true
+        },
+        {
+          "id": "day_thu",
+          "type": "checkbox",
+          "label": { "en": "Thursday" },
+          "value": true
+        },
+        {
+          "id": "day_fri",
+          "type": "checkbox",
+          "label": { "en": "Friday" },
+          "value": true
+        },
+        {
+          "id": "day_sat",
+          "type": "checkbox",
+          "label": { "en": "Saturday" },
+          "value": false
+        },
+        {
+          "id": "day_sun",
+          "type": "checkbox",
+          "label": { "en": "Sunday" },
+          "value": false
+        }
+      ]
+    }
+  ]
+}

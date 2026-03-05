@@ -93,3 +93,78 @@ export async function getDepartures(
   const json = await res.json() as DeparturesResponse;
   return json.data?.stopPlace?.estimatedCalls ?? [];
 }
+
+// --- Trip planner ---
+
+export interface TripLeg {
+  mode: string;
+  line: {
+    publicCode: string;
+    transportMode: string;
+  } | null;
+  fromEstimatedCall: {
+    expectedDepartureTime: string;
+  } | null;
+}
+
+export interface TripPattern {
+  startTime: string;
+  duration: number;
+  legs: TripLeg[];
+}
+
+interface TripResponse {
+  data: {
+    trip: {
+      tripPatterns: TripPattern[];
+    };
+  };
+}
+
+const TRIP_QUERY = `
+query PlanTrip($from: Location!, $to: Location!, $dateTime: DateTime!, $arriveBy: Boolean!, $numTripPatterns: Int!) {
+  trip(from: $from, to: $to, dateTime: $dateTime, arriveBy: $arriveBy, numTripPatterns: $numTripPatterns) {
+    tripPatterns {
+      startTime
+      duration
+      legs {
+        mode
+        line {
+          publicCode
+          transportMode
+        }
+        fromEstimatedCall {
+          expectedDepartureTime
+        }
+      }
+    }
+  }
+}
+`;
+
+export async function planTrip(
+  originId: string,
+  destinationId: string,
+  arriveByDateTime: string,
+): Promise<TripPattern[]> {
+  const res = await fetch('https://api.entur.io/journey-planner/v3/graphql', {
+    method: 'POST',
+    headers: {
+      ...BASE_HEADERS,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      query: TRIP_QUERY,
+      variables: {
+        from: { place: originId },
+        to: { place: destinationId },
+        dateTime: arriveByDateTime,
+        arriveBy: true,
+        numTripPatterns: 1,
+      },
+    }),
+  });
+
+  const json = await res.json() as TripResponse;
+  return json.data?.trip?.tripPatterns ?? [];
+}
