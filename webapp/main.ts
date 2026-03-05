@@ -18,6 +18,12 @@ import {
   shouldFireCommuteTrigger,
 } from '@lib/commute';
 
+// ==================== Helpers ====================
+
+function esc(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 // ==================== Constants ====================
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -131,7 +137,18 @@ function appendLog(type: 'trigger' | 'condition', name: string, detail: string) 
   entry.className = 'log-entry';
   const now = new Date();
   const ts = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
-  entry.innerHTML = `<span class="log-time">${ts}</span><span class="log-type ${type}">${name}</span><span class="log-tokens">${detail}</span>`;
+
+  const timeSpan = document.createElement('span');
+  timeSpan.className = 'log-time';
+  timeSpan.textContent = ts;
+  const typeSpan = document.createElement('span');
+  typeSpan.className = `log-type ${type}`;
+  typeSpan.textContent = name;
+  const detailSpan = document.createElement('span');
+  detailSpan.className = 'log-tokens';
+  detailSpan.textContent = detail;
+  entry.append(timeSpan, typeSpan, detailSpan);
+
   flowLog.prepend(entry);
   // Keep max 100 entries
   while (flowLog.children.length > 100) flowLog.lastChild?.remove();
@@ -149,8 +166,8 @@ function renderSearchResults(
     const li = document.createElement('li');
     const icon = stop.categories.map((c) => CATEGORY_ICONS[c] || '📍').join(' ');
     li.innerHTML = `<span class="stop-icon">${icon}</span>
-      <span class="stop-name">${stop.name}</span>
-      <span class="stop-locality">${stop.locality}</span>`;
+      <span class="stop-name">${esc(stop.name)}</span>
+      <span class="stop-locality">${esc(stop.locality)}</span>`;
     li.addEventListener('click', () => onSelect(stop));
     list.appendChild(li);
   }
@@ -199,9 +216,9 @@ function renderDepartures(calls: EstimatedCall[]) {
       const { icon, line, dest, time, realtime } = formatDeparture(call);
       return `<div class="departure-row">
         <span class="dep-icon">${icon}</span>
-        <span class="dep-line">${line}</span>
-        <span class="dep-dest">${dest}</span>
-        <span class="dep-time ${time === 'now' ? 'dep-now' : ''}">${time}</span>
+        <span class="dep-line">${esc(line)}</span>
+        <span class="dep-dest">${esc(dest)}</span>
+        <span class="dep-time ${time === 'now' ? 'dep-now' : ''}">${esc(time)}</span>
         ${realtime ? '<span class="dep-rt" title="Realtime">⚡</span>' : '<span class="dep-rt"></span>'}
       </div>`;
     })
@@ -238,10 +255,13 @@ function updateLineSelectOptions() {
 
 async function fetchAndRender() {
   if (!depSelectedStop) return;
+  const stopId = depSelectedStop.id;
   try {
     const numDepartures = Math.max(20, depConfig.displayCount * 5);
     const timeRange = depConfig.timeWindow * 60;
-    const calls = await getDepartures(depSelectedStop.id, numDepartures, timeRange);
+    const calls = await getDepartures(stopId, numDepartures, timeRange);
+    // Discard result if stop changed while awaiting
+    if (!depSelectedStop || depSelectedStop.id !== stopId) return;
     depCachedCalls = calls.sort(
       (a, b) => new Date(a.expectedDepartureTime).getTime() - new Date(b.expectedDepartureTime).getTime(),
     );
@@ -249,9 +269,8 @@ async function fetchAndRender() {
     updateLineSelectOptions();
     if (depPollTimer) restartDepRefreshAnimation();
 
-    // Evaluate triggers
-    const filtered = getFilteredDepartures();
-    const events = evaluateDepartureTriggers(filtered, depFiredTriggers);
+    // Evaluate triggers against all departures (not just display slice)
+    const events = evaluateDepartureTriggers(depCachedCalls, depFiredTriggers);
     for (const evt of events) {
       logTriggerEvent(evt);
     }
@@ -423,6 +442,8 @@ function restartCommuteRefreshAnimation() {
 
 async function fetchCommute() {
   if (!commuteOrigin || !commuteDest) return;
+  const originId = commuteOrigin.id;
+  const destId = commuteDest.id;
 
   const timeStr = commuteArrival.value;
   if (!timeStr) return;
@@ -434,7 +455,9 @@ async function fetchCommute() {
   arrival.setHours(parseInt(match[1], 10), parseInt(match[2], 10), 0, 0);
 
   try {
-    const patterns = await planTrip(commuteOrigin.id, commuteDest.id, arrival.toISOString());
+    const patterns = await planTrip(originId, destId, arrival.toISOString());
+    // Discard result if origin/dest changed while awaiting
+    if (!commuteOrigin || !commuteDest || commuteOrigin.id !== originId || commuteDest.id !== destId) return;
     if (patterns.length === 0) {
       commuteLeaveAtEl.textContent = 'No trips';
       commuteLineEl.textContent = '—';

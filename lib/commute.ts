@@ -58,20 +58,18 @@ export function shouldFireCommuteTrigger(
   firedKey: string | null,
 ): CommuteTriggerResult {
   const now = new Date();
-  const todayKey = now.toISOString().slice(0, 10);
+  // Use local date components to avoid UTC midnight mismatch
+  const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const leaveHH = String(leaveAt.getHours()).padStart(2, '0');
   const leaveMM = String(leaveAt.getMinutes()).padStart(2, '0');
   const leaveAtStr = `${leaveHH}:${leaveMM}`;
 
+  // Dedup key includes today's date so triggers reset on new day
   const dedupKey = `${todayKey}|${leaveAtStr}`;
   const minutesBefore = Math.round((leaveAt.getTime() - now.getTime()) / 60_000);
 
-  // Reset deduplication on new day
-  const sameDay = firedKey && firedKey.startsWith(todayKey);
   const alreadyFired = firedKey === dedupKey;
-
   const shouldFire = !alreadyFired
-    && (!firedKey || sameDay || !sameDay) // always allow if different day
     && minutesBefore >= 0
     && minutesBefore <= 60;
 
