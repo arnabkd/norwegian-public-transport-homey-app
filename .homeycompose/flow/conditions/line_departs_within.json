@@ -1,0 +1,25 @@
+{
+  "title": { "en": "Line !{{departs|does not depart}} within ... minutes" },
+  "titleFormatted": { "en": "Line [[line]] !{{departs|does not depart}} within [[minutes]] minutes" },
+  "hint": { "en": "Checks if a specific line has a departure within the given number of minutes." },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=norwegian-public-transport"
+    },
+    {
+      "type": "autocomplete",
+      "name": "line",
+      "placeholder": { "en": "Search for a line..." }
+    },
+    {
+      "type": "number",
+      "name": "minutes",
+      "min": 1,
+      "max": 60,
+      "step": 1,
+      "placeholder": { "en": "Minutes" }
+    }
+  ]
+}

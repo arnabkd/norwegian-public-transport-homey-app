@@ -1,15 +1,12 @@
 import Homey from 'homey';
 import { type EstimatedCall, getDepartures } from '../../lib/entur-api';
-
-const MODE_ICONS: Record<string, string> = {
-  bus: '\u{1F68C}',
-  metro: '\u{1F687}',
-  tram: '\u{1F68A}',
-  rail: '\u{1F682}',
-  water: '\u26F4\uFE0F',
-  air: '\u2708\uFE0F',
-  coach: '\u{1F68C}',
-};
+import {
+  MODE_ICONS,
+  formatDepartureTime,
+  evaluateDepartureTriggers,
+  checkLineDepartsWithin,
+  checkNextDepartureIsMode,
+} from '../../lib/departures';
 
 const CAPABILITY_KEYS = [
   'departure_line_1',
@@ -29,6 +26,8 @@ const MODE_SETTING_KEYS: Record<string, string> = {
 
 class StopPlaceDevice extends Homey.Device {
   private pollInterval: NodeJS.Timeout | undefined;
+  private firedTriggers = new Set<string>();
+  private lastDepartures: EstimatedCall[] = [];
 
   async onInit() {
     const stopPlaceId = this.getStoreValue('stopPlaceId');
@@ -40,6 +39,8 @@ class StopPlaceDevice extends Homey.Device {
     this.log(
       `Monitoring departures for ${this.getStoreValue('stopPlaceName')} (${stopPlaceId})`,
     );
+
+    this.registerFlowCards();
 
     await this.pollDepartures();
     this.pollInterval = this.homey.setInterval(
@@ -66,6 +67,64 @@ class StopPlaceDevice extends Homey.Device {
     }
   }
 
+  private registerFlowCards() {
+    // --- Trigger: departure_leaving_soon ---
+    const departureTrigger = this.homey.flow.getDeviceTriggerCard('departure_leaving_soon');
+    departureTrigger.registerRunListener(async (args, state) => {
+      return state.minutesUntil <= args.minutes;
+    });
+
+    // --- Trigger: line_leaving_soon ---
+    const lineTrigger = this.homey.flow.getDeviceTriggerCard('line_leaving_soon');
+    lineTrigger.registerRunListener(async (args, state) => {
+      return state.lineId === args.line.id && state.minutesUntil <= args.minutes;
+    });
+    lineTrigger.registerArgumentAutocompleteListener('line', async (query) => {
+      return this.getLineAutocompleteResults(query);
+    });
+
+    // --- Condition: line_departs_within ---
+    const lineCondition = this.homey.flow.getConditionCard('line_departs_within');
+    lineCondition.registerRunListener(async (args) => {
+      return checkLineDepartsWithin(this.lastDepartures, args.line.id, args.minutes);
+    });
+    lineCondition.registerArgumentAutocompleteListener('line', async (query) => {
+      return this.getLineAutocompleteResults(query);
+    });
+
+    // --- Condition: next_departure_is_mode ---
+    const modeCondition = this.homey.flow.getConditionCard('next_departure_is_mode');
+    modeCondition.registerRunListener(async (args) => {
+      return checkNextDepartureIsMode(this.lastDepartures, args.mode);
+    });
+  }
+
+  private getLineAutocompleteResults(query: string) {
+    const seen = new Set<string>();
+    const results: Array<{ id: string; name: string; description?: string }> = [];
+
+    for (const d of this.lastDepartures) {
+      const code = d.serviceJourney.line.publicCode;
+      const dest = d.destinationDisplay.frontText;
+      const key = `${code}|${dest}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+
+      const icon = MODE_ICONS[d.serviceJourney.line.transportMode] || '';
+      results.push({
+        id: key,
+        name: `${icon} ${code}`,
+        description: dest,
+      });
+    }
+
+    if (!query) return results;
+    const q = query.toLowerCase();
+    return results.filter(
+      (r) => r.name.toLowerCase().includes(q) || r.description?.toLowerCase().includes(q),
+    );
+  }
+
   private getEnabledModes(): Set<string> {
     const modes = new Set<string>();
     for (const [mode, settingKey] of Object.entries(MODE_SETTING_KEYS)) {
@@ -89,6 +148,9 @@ class StopPlaceDevice extends Homey.Device {
             - new Date(b.expectedDepartureTime).getTime(),
         );
 
+      this.lastDepartures = sorted;
+
+      // Update capability display
       for (let i = 0; i < CAPABILITY_KEYS.length; i++) {
         const key = CAPABILITY_KEYS[i];
         if (sorted[i]) {
@@ -99,6 +161,33 @@ class StopPlaceDevice extends Homey.Device {
           );
         } else {
           await this.setCapabilityValue(key, '-').catch(this.error);
+        }
+      }
+
+      // Evaluate flow triggers
+      const events = evaluateDepartureTriggers(sorted, this.firedTriggers);
+      for (const evt of events) {
+        if (evt.type === 'departure_leaving_soon') {
+          const tokens = {
+            line: evt.lineCode,
+            destination: evt.destination,
+            mode: evt.mode,
+            minutes_until: evt.minutesUntil,
+          };
+          const state = { minutesUntil: evt.minutesUntil, lineId: evt.lineId };
+          this.homey.flow.getDeviceTriggerCard('departure_leaving_soon')
+            .trigger(this, tokens, state)
+            .catch(this.error);
+        } else if (evt.type === 'line_leaving_soon') {
+          const tokens = {
+            destination: evt.destination,
+            mode: evt.mode,
+            minutes_until: evt.minutesUntil,
+          };
+          const state = { minutesUntil: evt.minutesUntil, lineId: evt.lineId };
+          this.homey.flow.getDeviceTriggerCard('line_leaving_soon')
+            .trigger(this, tokens, state)
+            .catch(this.error);
         }
       }
     } catch (err) {
@@ -116,21 +205,7 @@ class StopPlaceDevice extends Homey.Device {
     const line = call.serviceJourney.line.publicCode;
     const dest = call.destinationDisplay.frontText;
 
-    const now = Date.now();
-    const departureMs = new Date(call.expectedDepartureTime).getTime();
-    const diffMin = Math.round((departureMs - now) / 60_000);
-
-    let time: string;
-    if (diffMin < 1) {
-      time = 'now';
-    } else if (diffMin < 60) {
-      time = `${diffMin} min`;
-    } else {
-      const d = new Date(call.expectedDepartureTime);
-      const hh = String(d.getHours()).padStart(2, '0');
-      const mm = String(d.getMinutes()).padStart(2, '0');
-      time = `${hh}:${mm}`;
-    }
+    const { time } = formatDepartureTime(call.expectedDepartureTime, 60);
 
     // Time is now in the subtitle, so the value only has: "{icon} {line} {dest}"
     // Icon counts as ~2 visible chars

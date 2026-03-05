@@ -1,0 +1,46 @@
+{
+  "title": { "en": "Line ... leaves within ... minutes" },
+  "titleFormatted": { "en": "Line [[line]] leaves within [[minutes]] minutes" },
+  "highlight": true,
+  "hint": { "en": "Triggers when a specific line departs within the specified number of minutes. Fires once per departure." },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=norwegian-public-transport"
+    },
+    {
+      "type": "autocomplete",
+      "name": "line",
+      "placeholder": { "en": "Search for a line..." }
+    },
+    {
+      "type": "number",
+      "name": "minutes",
+      "min": 1,
+      "max": 60,
+      "step": 1,
+      "placeholder": { "en": "Minutes" }
+    }
+  ],
+  "tokens": [
+    {
+      "name": "destination",
+      "type": "string",
+      "title": { "en": "Destination" },
+      "example": { "en": "Helsfyr" }
+    },
+    {
+      "name": "mode",
+      "type": "string",
+      "title": { "en": "Transport mode" },
+      "example": { "en": "bus" }
+    },
+    {
+      "name": "minutes_until",
+      "type": "number",
+      "title": { "en": "Minutes until departure" },
+      "example": { "en": "3" }
+    }
+  ]
+}
